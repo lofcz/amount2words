@@ -1,226 +1,257 @@
 var atw = {
+    getLang: (lang) => {
+        return lang.toLowerCase() === "cs" || lang.toLowerCase() === "cz" ? "cz" : "en";
+    },
+    i18n: {
+        en: {
+            currencies: {
+                czk: ["Czech crowns", "Czech crown", "Czech crowns", "hallers", "haller", "hallers"],
+                eur: ["Euro", "Euro", "Euro", "cents", "cent", "cents"],
+                usd: ["U.S. dollars", "U.S. dollar", "U.S. dollars", "cents", "cent", "cents"],
+                gbp: ["pounds", "pound", "pounds", "pence", "penny", "pence"]
+            }
+        },
+        cz: {
+            currencies: {
+                czk: ["korun českých", "koruna česká", "koruny české", "haléřů", "haléř", "haléře"],
+                eur: ["eur", "euro", "eura", "centů", "cent", "centy"],
+                usd: ["amerických dolarů", "americký dolar", "americké dolary", "centů", "cent", "centy"],
+                gbp: ["britských liber", "britská libra", "britské libry", "pencí", "pence", "pence"]
+            }
+        }
+    },
     amountToWords: (amount, lang = "cz", curr = "czk") => {
         amount = amount.toString();
-        var number = atw.round_float(parseFloat(amount), 2);
-        var desetine_str = '';
-        var desetine = (amount.split('.')[1]) ? parseInt((amount.split('.')[1] + '0000').substring(0, 2), 10) : 0;
-        var value = Math.floor(number, true);
-        var value_str = value + '';
-        var cods = {};
-        var result = '';
-        curr = curr.toUpperCase();
+        curr = curr.toLowerCase();
         lang = lang.toLowerCase();
-
-        if (lang == 'en') {
-            cods['CZK'] = ['Czech crowns', 'Czech crown', 'Czech crowns', 'haléřů', 'haléř', 'haléře'];
-            cods['EUR'] = ['Euro', 'Euro', 'Euro', 'cents', 'cent', 'cents'];
-            cods['USD'] = ['U.S. dollars', 'U.S. dollar', 'U.S. dollars', 'cents', 'cent', 'cents'];
-            cods['GBP'] = ['pounds', 'pound', 'pounds', 'pence', 'penny', 'pence'];
-        } else {
-            cods['CZK'] = ['korun českých', 'koruna česká', 'koruny českách', 'haléřů', 'haléř', 'haléře'];
-            cods['EUR'] = ['eur', 'euro', 'eura', 'centů', 'cent', 'centy'];
-            cods['USD'] = ['amerických dolarů', 'americký dolar', 'americké dolary', 'centů', 'cent', 'centy'];
-            cods['GBP'] = ['britských liber', 'britská libra', 'britské libry', 'pencí­', 'pence', 'pence'];
-        }
-        var codestr = cods[curr];
-        var cstring = '';
+        
+        var number = atw.round_float(parseFloat(amount), 2);
+        var decimalStr = "";
+        var decimal = (amount.split(".")[1]) ? parseInt((amount.split(".")[1] + "0000").substring(0, 2), 10) : 0;
+        var value = Math.floor(number);
+        var valueStr = value + "";
+        var result;
+        var currencyStr = "";
+        var currenciesStr = atw.i18n[atw.getLang(lang)].currencies[curr];
+        
         if (value < 0) {
-            result = '';
-        } else if (value == 0 && parseFloat(desetine) != 0) {
-            result = '';
+            result = "";
+        } else if (value === 0 && parseFloat(decimal.toString()) !== 0) {
+            result = "";
         } else if (value < 100) {
-            cstring = codestr[0];
-            if (value == 1) {
-                cstring = codestr[1];
+            currencyStr = currenciesStr[0];
+            
+            if (value === 1) {
+                currencyStr = currenciesStr[1];
             } else if (value > 1 && value <= 4) {
-                cstring = codestr[2];
+                currencyStr = currenciesStr[2];
             }
-            result = atw.firstupper(atw.jednotkyAdesitky(value_str.substring(value_str.length - 2, value_str.length), false, lang)) + ' ' + cstring;
-            if (value == 1 && lang != 'en') {
-                if (curr == 'CZK' || curr == 'GBP') {
-                    result = 'jedna' + ' ' + cstring;
-                } else if (curr == 'EUR') {
-                    result = 'jedno' + ' ' + cstring;
-                } else if (curr == 'USD' || curr == 'CHF') {
-                    result = 'jeden' + ' ' + cstring;
+            
+            result = atw.firstupper(atw.decimalFn(valueStr.substring(valueStr.length - 2, valueStr.length), false, lang)) + " " + currencyStr;
+            
+            if (value === 1 && lang !== "en") {
+                if (curr === "czk" || curr === "gbp") {
+                    result = "jedna" + " " + currencyStr;
+                } else if (curr === "eur") {
+                    result = "jedno" + " " + currencyStr;
+                } else if (curr === "usd") {
+                    result = "jeden" + " " + currencyStr;
                 }
-            } else if (value == 2 && lang != 'en') {
-                if (curr == 'CZK' || curr == 'EUR' || curr == 'GBP') {
-                    result = 'dvě' + ' ' + cstring;
-                } else if (curr == 'USD' || curr == 'CHF') {
-                    result = 'dva' + ' ' + cstring;
+            } else if (value === 2 && lang !== "en") {
+                if (curr === "czk" || curr === "eur" || curr === "gbp") {
+                    result = "dvě" + " " + currencyStr;
+                } else if (curr === "usd") {
+                    result = "dva" + " " + currencyStr;
                 }
             }
+            
         } else if (value < 1000) {
-            result = atw.firstupper(atw.stovky_fn(value_str.substring(value_str.length - 3, value_str.length), lang)) + ' ' + codestr[0];
+            result = atw.firstupper(atw.hundredsFn(valueStr.substring(valueStr.length - 3, valueStr.length), lang)) + " " + currenciesStr[0];
         } else if (value < 1000000) {
-            result = atw.firstupper(atw.tisice_fn(value_str.substring(value_str.length - 6, value_str.length), lang)) + ' ' + codestr[0];
+            result = atw.firstupper(atw.thousandsFn(valueStr.substring(valueStr.length - 6, valueStr.length), lang)) + " " + currenciesStr[0];
         } else if (value < 1000000000) {
-            result = atw.firstupper(atw.miliony_fn(value_str.substring(value_str.length - 9, value_str.length), lang)) + ' ' + codestr[0];
+            result = atw.firstupper(atw.millionsFn(valueStr.substring(valueStr.length - 9, valueStr.length), lang)) + " " + currenciesStr[0];
         } else if (value < 1000000000000) {
-            result = atw.firstupper(atw.miliardy_fn(value_str.substring(value_str.length - 12, value_str.length), lang)) + ' ' + codestr[0];
+            result = atw.firstupper(atw.milliardsFn(valueStr.substring(valueStr.length - 12, valueStr.length), lang)) + " " + currenciesStr[0];
         } else {
-            result = '';
+            result = "";
         }
-        if (desetine != 0) {
-            desetine_str = atw.jednotkyAdesitky(desetine, true, lang);
-            var cents = codestr[3];
-            if (desetine == 1) {
-                cents = codestr[4];
-            } else if (desetine > 1 && desetine <= 4) {
-                cents = codestr[5];
+        
+        if (decimal !== 0) {
+            decimalStr = atw.decimalFn(decimal, true, lang);
+            
+            var cents = currenciesStr[3];
+            
+            if (decimal === 1) {
+                cents = currenciesStr[4];
+            } else if (decimal > 1 && decimal <= 4) {
+                cents = currenciesStr[5];
             }
-            result = result + ' ' + desetine_str + ' ' + cents;
+            
+            result = result + " " + decimalStr + " " + cents;
         }
         return result;
     },
-    jednotkyAdesitky: (value, men, lang) => {
-        var value_str = value + '';
-        var jednotky = [];
-        var desitky = [];
-        if (lang == 'en') {
-            jednotky = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
-            desitky = ["nula", "ten", "twenty", "thirty", "fourty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+    decimalFn: (value, men, lang) => {
+        var valStr = value.toString();
+        var units;
+        var decimals;
+        
+        if (lang === "en") {
+            units = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+            decimals = ["zero", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
         } else {
-            jednotky = ["nula", "jedna", "dva", "tři", "čtyři", "pět", "šest", "sedm", "osm", "devět", "deset", "jedenáct", "dvanáct", "třináct", "čtrnáct", "patnáct", "šestnáct", "sedmnáct", "osmnáct", "devatenáct"];
-            desitky = ["nula", "deset", "dvacet", "třicet", "čtyřicet", "padesát", "šedesát", "sedmdesát", "osmdesát", "devadesát"];
-            if (men) {
-                jednotky[1] = 'jeden';
-            }
+            units = ["nula", men ? "jeden" : "jedna", "dva", "tři", "čtyři", "pět", "šest", "sedm", "osm", "devět", "deset", "jedenáct", "dvanáct", "třináct", "čtrnáct", "patnáct", "šestnáct", "sedmnáct", "osmnáct", "devatenáct"];
+            decimals = ["nula", "deset", "dvacet", "třicet", "čtyřicet", "padesát", "šedesát", "sedmdesát", "osmdesát", "devadesát"];
         }
-        if (value == 0) {
-            return jednotky[parseInt(value, 10)];;
+        
+        if (value === 0) {
+            return units[parseInt(value, 10)];;
         }
+        
         if (value < 20) {
-            return jednotky[parseInt(value, 10)];
+            return units[parseInt(value, 10)];
         }
-        value2 = value_str.substring(value_str.length - 2, 1);
-        value1 = value_str.substring(value_str.length - 1, value_str.length);
-        if (value1 == 0) {
-            return desitky[parseInt(value2, 10)];
-        }
-        return desitky[parseInt(value2, 10)] + ' ' + jednotky[parseInt(value1, 10)];
+
+        var value1 = valStr.substring(valStr.length - 1, valStr.length);
+        var value2 = valStr.substring(valStr.length - 2, 1);
+        
+        return parseInt(value1) === 0 ? decimals[parseInt(value2, 10)] : decimals[parseInt(value2, 10)] + " " + units[parseInt(value1, 10)];
     },
-    stovky_fn: (value, lang) => {
-        var value_str = value + '';
-        var str = '';
-        var jednotk = '';
-        var stovky = [];
-        if (lang == 'en') {
-            jednotk = 'one hundred ';
-            stovky = ["zero", "hundred", "two hundred", "three hundred", "four hundred", "five hundred", "six hundred", "seven hundred", "eight hundred", "nine hundred"];
+    hundredsFn: (value, lang) => {
+        var valueStr = value.toString();
+        var str = "";
+        var units;
+        var hundreds;
+        
+        if (lang === "en") {
+            units = "one hundred";
+            hundreds = ["zero", "hundred", "two hundred", "three hundred", "four hundred", "five hundred", "six hundred", "seven hundred", "eight hundred", "nine hundred"];
         } else {
-            jednotk = 'jedno sto';
-            stovky = ["nula", "sto", "dvě sta", "tři sta", "čtyři sta", "pět set", "šest set", "sedm set", "osm set", "devět set"];
+            units = "jedno sto";
+            hundreds = ["nula", "sto", "dvě sta", "tři sta", "čtyři sta", "pět set", "šest set", "sedm set", "osm set", "devět set"];
         }
         if (value < 100) {
-            return atw.jednotkyAdesitky(value_str.substring(value_str.length - 2, value_str.length), false, lang);
+            return atw.decimalFn(valueStr.substring(valueStr.length - 2, valueStr.length), false, lang);
         }
-        value3 = value_str.substring(value_str.length - 3, 1);
-        value2 = value_str.substring(value_str.length - 2, value_str.length);
-        if (value3 == 1) {
-            str = jednotk;
+
+        var value2 = valueStr.substring(valueStr.length - 2, valueStr.length);
+        var value3 = valueStr.substring(valueStr.length - 3, 1);
+        
+        if (parseInt(value3) === 1) {
+            str = units;
         } else {
-            str = stovky[parseInt(value3, 10)];
+            str = hundreds[parseInt(value3, 10)];
         }
-        if (value2 != 0)
-            str = str + ' ' + atw.jednotkyAdesitky(value2, false, lang);
-        return str;
+        
+        return parseInt(value2) !== 0 ? str + " " + atw.decimalFn(value2, false, lang) : str;
     },
-    tisice_fn: (value, lang) => {
-        var value_str = value + '';
-        var str = '';
-        var jednotk = '';
-        var tisice = [];
-        if (lang == 'en') {
-            jednotk = 'one';
-            tisice = ["zero", "thousand", "thousands", "thousands"];
+    thousandsFn: (value, lang) => {
+        var valueStr = value.toString();
+        var str = "";   
+        var units;
+        var thousands;
+        
+        if (lang === "en") {
+            units = "one";
+            thousands = ["zero", "thousand", "thousands", "thousands"];
         } else {
-            jednotk = 'jeden';
-            tisice = ["nula", "tisíc", "tisíce", "tisíců"];
+            units = "jeden";
+            thousands = ["nula", "tisíc", "tisíce", "tisíců"];
         }
         if (value < 1000) {
-            return atw.stovky_fn(value_str.substring(value_str.length - 3, value_str.length), lang);
+            return atw.hundredsFn(valueStr.substring(valueStr.length - 3, valueStr.length), lang);
         }
         if (value < 2000) {
-            str = jednotk + ' ' + tisice[1];
+            str = units + " " + thousands[1];
         } else if (value < 5000) {
-            str = atw.stovky_fn(value_str.substring(0, value_str.length - 3), lang);
-            str = str + ' ' + tisice[2];
+            str = atw.hundredsFn(valueStr.substring(0, valueStr.length - 3), lang);
+            str = str + " " + thousands[2];
         } else {
-            str = atw.stovky_fn(value_str.substring(0, value_str.length - 3), lang);
-            str = str + ' ' + tisice[3];
+            str = atw.hundredsFn(valueStr.substring(0, valueStr.length - 3), lang);
+            str = str + " " + thousands[3];
         }
-        if (value_str.substring(value_str.length - 3, value_str.length) != 0) {
-            str = str + ' ' + atw.stovky_fn(value_str.substring(value_str.length - 3, value_str.length), lang);
+        
+        var rem = parseInt(valueStr.substring(valueStr.length - 3, valueStr.length));
+
+        if (rem !== 0) {
+            str = str + " " + atw.hundredsFn(valueStr.substring(valueStr.length - 3, valueStr.length), lang);
         }
         return str;
     },
-    miliony_fn: (value, lang) => {
-        var value_str = value + '';
-        var str = '';
-        var jednotk = '';
-        var miliony = [];
-        if (lang == 'en') {
-            jednotk = 'one';
-            miliony = ["zero", "million", "million", "million"];
+    millionsFn: (value, lang) => {
+        var valueStr = value.toString();
+        var str = "";
+        var units;
+        var millions;
+        
+        if (lang === "en") {
+            units = "one";
+            millions = ["zero", "million", "million", "million"];
         } else {
-            jednotk = 'jeden';
-            miliony = ["nula", "milion", "miliony", "milionů"];
+            units = "jeden";
+            millions = ["nula", "milion", "miliony", "milionů"];
         }
+        
         if (value < 1000000) {
-            return tisice_fn(value_str.substring(value_str.length - 6, value_str.length));
+            return atw.thousandsFn(valueStr.substring(valueStr.length - 6, valueStr.length));
         }
+        
         if (value < 2000000) {
-            str = jednotk + ' ' + miliony[1];
+            str = units + " " + millions[1];
         } else if (value < 5000000) {
-            str = atw.stovky_fn(value_str.substring(0, value_str.length - 6), lang);
-            str = str + ' ' + miliony[2];
+            str = atw.hundredsFn(valueStr.substring(0, valueStr.length - 6), lang);
+            str = str + " " + millions[2];
         } else {
-            str = atw.stovky_fn(value_str.substring(0, value_str.length - 6), lang);
-            str = str + ' ' + miliony[3];
+            str = atw.hundredsFn(valueStr.substring(0, valueStr.length - 6), lang);
+            str = str + " " + millions[3];
         }
-        if (value_str.substring(value_str.length - 6, value_str.length) != 0) {
-            str = str + ' ' + atw.tisice_fn(value_str.substring(value_str.length - 6, value_str.length), lang);
+        
+        var rem = parseInt(valueStr.substring(valueStr.length - 6, valueStr.length));
+        
+        if (rem !== 0) {
+            str = str + " " + atw.thousandsFn(valueStr.substring(valueStr.length - 6, valueStr.length), lang);
         }
+        
         return str;
     },
-    miliardy_fn: (value, lang) => {
-        var value_str = value + '';
-        var jednotk = '';
-        var str = '';
-        var miliarda = [];
-        if (lang == 'en') {
-            jednotk = 'one';
-            miliarda = ["nula", "billion", "billions", "billions"];
+    milliardsFn: (value, lang) => {
+        var valueStr = value.toString();
+        var units;
+        var str = "";
+        var milliards;
+        
+        if (lang === "en") {
+            units = "one";
+            milliards = ["zero", "billion", "billions", "billions"];
         } else {
-            jednotk = 'jedna';
-            miliarda = ["nula", "miliarda", "miliardy", "miliard"];
+            units = "jedna";
+            milliards = ["nula", "miliarda", "miliardy", "miliard"];
         }
         if (value < 1000000000) {
-            return atw.miliony_fn(value_str.substring(value_str.length - 9, value_str.length), lang);
+            return atw.millionsFn(valueStr.substring(valueStr.length - 9, valueStr.length), lang);
         }
         if (value < 2000000000) {
-            str = jednotk + ' ' + miliarda[1];
-        } else if (value == 2000000000) {
-            str = 'dvě' + ' ' + miliarda[2];
+            str = units + " " + milliards[1];
+        } else if (value === 2000000000) {
+            str = "dvě" + " " + milliards[2];
         } else if (value < 5000000000) {
-            str = atw.stovky_fn(value_str.substring(0, value_str.length - 9), lang);
-            str = str + ' ' + miliarda[2];
+            str = atw.hundredsFn(valueStr.substring(0, valueStr.length - 9), lang);
+            str = str + " " + milliards[2];
         } else {
-            str = atw.tisice_fn(value_str.substring(0, value_str.length - 9, lang));
-            str = str + ' ' + miliarda[3];
+            str = atw.thousandsFn(valueStr.substring(0, valueStr.length - 9), lang);
+            str = str + " " + milliards[3];
         }
-        if (value_str.substring(value_str.length - 9, value_str.length) != 0) {
-            str = str + ' ' + atw.miliony_fn(value_str.substring(value_str.length - 9, value_str.length));
+        if (parseInt(valueStr.substring(valueStr.length - 9, valueStr.length)) !== 0) {
+            str = str + " " + atw.millionsFn(valueStr.substring(valueStr.length - 9, valueStr.length));
         }
         return str;
     },
     round_float: (x, n) => {
         if (!parseInt(n, 10))
-            var n = 0;
+            n = 0;
         if (!parseFloat(x))
-            return false;
+            return 0;
         return Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
     },
     firstupper: (str) => {
