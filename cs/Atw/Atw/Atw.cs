@@ -1,3 +1,5 @@
+﻿namespace Atw;
+
 public static class Atw
 {
     public enum Languages
@@ -11,7 +13,8 @@ public static class Atw
         Czk,
         Eur,
         Usd,
-        Gbp
+        Gbp,
+        None
     }
     
     public static string AmountToWords(long amount, Languages lang = Languages.Cz, Currencies curr = Currencies.Czk)
@@ -22,7 +25,7 @@ public static class Atw
         int decimalVal = amountStr.Split(".").Length > 1 ? int.Parse((amountStr.Split(".")[1] + "0000")[..2]) : 0;
         string valueStr = amount.ToString();
         string result;
-        List<string> currenciesStr = CurrenciesDict[lang][curr];
+        List<string>? currenciesStr = curr is Currencies.None ? null : CurrenciesDict[lang][curr];
 
         switch (amount)
         {
@@ -32,49 +35,49 @@ public static class Atw
                 break;
             case < 100:
             {
-                string currencyStr = amount switch
+                string currencyStr = currenciesStr is null ? string.Empty : amount switch
                 {
                     1 => currenciesStr[1],
                     > 1 and <= 4 => currenciesStr[2],
                     _ => currenciesStr[0]
                 };
 
-                result = $"{DecimalFn(int.Parse(valueStr.Length >= 2 ? valueStr[^2..] : valueStr), false, lang)} {currencyStr}";
+                result = $"{DecimalFn(int.Parse(valueStr.Length >= 2 ? valueStr[^2..] : valueStr), false, lang)}{(curr is Currencies.None ? string.Empty : $" {currencyStr}")}";
 
-                switch (amount)
+                if (curr is not Currencies.None)
                 {
-                    case 1 when lang is not Languages.En:
-                        result = curr switch
+                    result = amount switch
+                    {
+                        1 when lang is not Languages.En => curr switch
                         {
                             Currencies.Czk or Currencies.Gbp => $"jedna {currencyStr}",
                             Currencies.Eur => $"jedno {currencyStr}",
                             Currencies.Usd => $"jeden {currencyStr}",
                             _ => result
-                        };
-                        break;
-                    case 2 when lang is not Languages.En:
-                        result = curr switch
+                        },
+                        2 when lang is not Languages.En => curr switch
                         {
                             Currencies.Czk or Currencies.Eur or Currencies.Gbp => $"dvě {currencyStr}",
                             Currencies.Usd => $"dva {currencyStr}",
                             _ => result
-                        };
-                        break;
+                        },
+                        _ => result
+                    };
                 }
 
                 break;
             }
             case < 1000:
-                result = $"{HundredsFn(int.Parse(valueStr.Length > 3 ? valueStr[^3..] : valueStr), lang)} {currenciesStr[0]}";
+                result = $"{HundredsFn(int.Parse(valueStr.Length > 3 ? valueStr[^3..] : valueStr), lang)}{(curr is Currencies.None ? string.Empty : $" {currenciesStr[0]}")}";
                 break;
             case < 1000000:
-                result = $"{ThousandsFn(int.Parse(valueStr.Length > 6 ? valueStr[^6..] : valueStr), lang)} {currenciesStr[0]}";
+                result = $"{ThousandsFn(int.Parse(valueStr.Length > 6 ? valueStr[^6..] : valueStr), lang)}{(curr is Currencies.None ? string.Empty : $" {currenciesStr[0]}")}";
                 break;
             case < 1000000000:
-                result = $"{MillionsFn(int.Parse(valueStr.Length > 9 ? valueStr[^9..] : valueStr), lang)} {currenciesStr[0]}";
+                result = $"{MillionsFn(int.Parse(valueStr.Length > 9 ? valueStr[^9..] : valueStr), lang)}{(curr is Currencies.None ? string.Empty : $" {currenciesStr[0]}")}";
                 break;
             case < 1000000000000:
-                result = $"{MilliardsFn(int.Parse(valueStr.Length > 12 ? valueStr[^12..] : valueStr), lang)} {currenciesStr[0]}";
+                result = $"{MilliardsFn(int.Parse(valueStr.Length > 12 ? valueStr[^12..] : valueStr), lang)}{(curr is Currencies.None ? string.Empty : $" {currenciesStr[0]}")}";
                 break;
             default:
                 result = string.Empty;
@@ -210,7 +213,7 @@ public static class Atw
         
         if (value < 100)
         {
-            return DecimalFn(int.Parse(valueStr.Substring(valueStr.Length - 2, valueStr.Length)), false, lang);
+            return DecimalFn(int.Parse(valueStr.Length > 2 ? valueStr[^2..] : valueStr), false, lang);
         }
 
         string value2 = valueStr[^2..];
