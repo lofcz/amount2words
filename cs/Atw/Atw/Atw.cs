@@ -199,8 +199,8 @@ public static class Atw
                 return units[value];
         }
 
-        string value2 = valStr.Substring(valStr.Length - 2, 1);
-        string value1 = valStr[^1..];
+        string value1 = valStr.Length >= 1 ? valStr[^1..] : "0";
+        string value2 = valStr.Length >= 2 ? valStr.Substring(valStr.Length - 2, 1) : "0";
 
         return int.Parse(value1) is 0 ? decimals[int.Parse(value2)] : $"{decimals[int.Parse(value2)]} {units[int.Parse(value1)]}";
     }
@@ -216,8 +216,8 @@ public static class Atw
             return DecimalFn(int.Parse(valueStr.Length > 2 ? valueStr[^2..] : valueStr), false, lang);
         }
 
-        string value2 = valueStr[^2..];
-        string value3 = valueStr.Substring(valueStr.Length - 3, 1);
+        string value2 = valueStr.Length > 2 ? valueStr[^2..] : valueStr;
+        string value3 = valueStr.Length >= 3 ? valueStr.Substring(valueStr.Length - 3, 1) : "0";
         string str = int.Parse(value3) is 1 ? units : hundreds[int.Parse(value3)];
 
         return int.Parse(value2) is not 0 ? $"{str} {DecimalFn(int.Parse(value2), false, lang)}" : str;
@@ -263,21 +263,21 @@ public static class Atw
         switch (value)
         {
             case < 1000000:
-                return ThousandsFn(int.Parse(valueStr[^6..]), lang);
+                return ThousandsFn(int.Parse(valueStr.Length < 6 ? valueStr : valueStr[^6..]), lang);
             case < 2000000:
                 str = units;
                 break;
             case < 5000000:
-                str = $"{HundredsFn(int.Parse(valueStr[..^6]), lang)} {millions[2]}";
+                str = $"{HundredsFn(int.Parse(valueStr.Length < 6 ? valueStr : valueStr[..^6]), lang)} {millions[2]}";
                 break;
             default:
-                str = $"{HundredsFn(int.Parse(valueStr[..^6]), lang)} {millions[3]}";
+                str = $"{HundredsFn(int.Parse(valueStr.Length < 6 ? valueStr : valueStr[..^6]), lang)} {millions[3]}";
                 break;
         }
         
-        if (int.Parse(valueStr[^6..]) is not 0)
+        if (int.Parse(valueStr.Length < 6 ? valueStr : valueStr[^6..]) is not 0)
         {
-            str += $" {ThousandsFn(int.Parse(valueStr[^6..]), lang)}";
+            str += $" {ThousandsFn(int.Parse(valueStr.Length < 6 ? valueStr : valueStr[^6..]), lang)}";
         }
 
         return str;
@@ -293,7 +293,7 @@ public static class Atw
         switch (value)
         {
             case < 1000000000:
-                return MillionsFn(int.Parse(valueStr[^9..]), lang);
+                return MillionsFn(int.Parse(valueStr.Length < 9 ? valueStr : valueStr[^9..]), lang);
             case < 2000000000:
                 str = units;
                 break;
@@ -301,13 +301,13 @@ public static class Atw
                 str = lang is Languages.Cz ? "dvě miliardy" : "two billions";
                 break;
             default:
-                str = $"{HundredsFn(int.Parse(valueStr[..^9]), lang)} {milliards[2]}";
+                str = $"{HundredsFn(int.Parse(valueStr.Length < 9 ? valueStr : valueStr[..^9]), lang)} {milliards[2]}";
                 break;
         }
 
-        if (int.Parse(valueStr[^9..]) is not 0)
+        if (int.Parse(valueStr.Length < 9 ? valueStr : valueStr[^9..]) is not 0)
         {
-            str += $" {MillionsFn(int.Parse(valueStr[^9..]), lang)}";
+            str += $" {MillionsFn(int.Parse(valueStr.Length < 9 ? valueStr : valueStr[^9..]), lang)}";
         }
 
         return str;

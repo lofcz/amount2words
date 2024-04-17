@@ -7,7 +7,8 @@
         <Authors>Matěj "lofcz" Štágl</Authors>
         <Description>A simple amount to words converter.</Description>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>1.1.0</Version>
+        <Version>1.2.1</Version>
+        <PackageReleaseNotes>fix edge case</PackageReleaseNotes>
     </PropertyGroup>
 
 </Project>
