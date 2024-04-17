@@ -233,21 +233,21 @@ public static class Atw
         switch (value)
         {
             case < 1000:
-                return HundredsFn(int.Parse(valueStr[^3..]), lang);
+                return HundredsFn(int.Parse(valueStr.Length < 3 ? valueStr : valueStr[^3..]), lang);
             case < 2000:
                 str = units;
                 break;
             case < 5000:
-                str = $"{HundredsFn(int.Parse(valueStr[..^3]), lang)} {thousands[2]}";
+                str = $"{HundredsFn(int.Parse(valueStr.Length < 3 ? valueStr : valueStr[..^3]), lang)} {thousands[2]}";
                 break;
             default:
-                str = $"{HundredsFn(int.Parse(valueStr[..^3]), lang)} {thousands[3]}";
+                str = $"{HundredsFn(int.Parse(valueStr.Length < 3 ? valueStr : valueStr[..^3]), lang)} {thousands[3]}";
                 break;
         }
         
-        if (int.Parse(valueStr[^3..]) is not 0)
+        if (int.Parse(valueStr.Length < 3 ? valueStr : valueStr[^3..]) is not 0)
         {
-            str += $" {HundredsFn(int.Parse(valueStr[^3..]), lang)}";
+            str += $" {HundredsFn(int.Parse(valueStr.Length < 3 ? valueStr : valueStr[^3..]), lang)}";
         }
 
         return str;
