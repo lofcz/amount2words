@@ -1,3 +1,5 @@
+![Nuget](https://img.shields.io/nuget/v/atw)
+
 # Amount2Words
 
 A simple converter of numbers into their word counterparts. Supports `cz`, `en` languages and `czk`, `eur`, `usd`, `gbp` currencies.
