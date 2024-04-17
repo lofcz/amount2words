@@ -1,4 +1,4 @@
-![Nuget](https://img.shields.io/nuget/v/atw)
+![Nuget](https://img.shields.io/nuget/v/Atw)
 
 # Amount2Words
 
